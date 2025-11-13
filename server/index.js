@@ -1,17 +1,24 @@
-const http = require("http");
-const fs = require("fs");
-const url = require("url");
+const express = require("express");
 
+const app = express();
 
-const myServer = http.createServer((req, res) => {
+app.get("/", (req, res)=> {
+    return res.send("home page")
+})
+app.get("/about", (req, res)=> {
+    return res.send(`hello ${req.query.name}`)
+})
+
+function myHandler(req, res) {
+    if (req.url === "/favicon.ico") return res.end();
     const log = `${Date.now()}: ${req.url} New Req Recieved\n`;
     const myUrl = url.parse(req.url, true);
     console.log(myUrl)
-    if (req.url === "/favicon.ico") return res.end();
+    
     fs.appendFile("log.txt", log, (err, data) =>{
         switch (myUrl.pathname) {
             case "/":
-                res.end("homepage");
+                if (req.method==="Get")res.end("homepage");             
                 break;
             case "/about":
                 const username = myUrl.query.myname;
@@ -21,12 +28,15 @@ const myServer = http.createServer((req, res) => {
                 const search = myUrl.query.search_query;
                 res.end("your results for"+ search);
                 break;
+            case "/signup":
+                if (req.method==="Get") res.end("signup form"); 
+                else if (req.method==="Post") res.end("success");               
+                break;
             default:
                 res.end("404")
                 break;
         }
         
     });
-});
-
-myServer.listen(8000, () => console.log("server satrted"));
+}
+app.listen("8000", () => console.log("server satrted"));
